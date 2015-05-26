@@ -1,35 +1,30 @@
 {SelectListView} = require 'atom-space-pen-views'
 
 class EverythingView extends SelectListView
+  timeout: 0
+  providers: {}
+  lastQuery = ""
+
   initialize: ->
     super
     @addClass('overlay from-top')
     @setItems(['Hello', 'World', "Hello, World!"])
     atom.workspaceView.append(this)
-    @focusFilterEditor()
-    @registerProvider 'hello', (search) ->
-      new Promise (resolve) ->
-        resolve([
-          { displayName: "Hello, #{search}" }
-          { displayName: "Help, #{search}" }
-        ])
 
-    @registerProvider 'commands', (search) -> new Promise (resolve) ->
-      view = atom.views.getView(atom.workspace.getActiveTextEditor())
-      commands = atom.commands.findCommands(target: view)
-      resolve(commands)
-      
-  timeout: 0
-  providers: {}
-  lastQuery: null
-
-  cancelled: -> @hide()
+  cancelled: ->
+    @hide()
 
   viewForItem: (item) ->
-    "<li>#{item.displayName}</li>"
+    if item.additionalInfo
+      "<li>#{item.displayName} <div class='pull-right key-binding'>" +
+        item.additionalInfo + "</div></li>"
+    else
+      "<li>#{item.displayName}</li>"
 
   confirmed: (item) ->
-    console.log("#{item} was selected")
+    console.log(item)
+    console.log(item.function)
+    item.function()
     @hide()
 
   getFilterKey: -> "displayName"
@@ -42,13 +37,18 @@ class EverythingView extends SelectListView
 
   getFilterQuery: ->
     query = super
-    return query if query == @lastQuery
-    @lastQuery = query
+    return query if query == lastQuery
+    lastQuery = query
+    @updateResults(query)
+    query
 
+  updateResults: (query) ->
     @setItems([])
     for name, provider of @providers when provider.willRun(query)
       provider.function(query).then (items) =>
         @appendItems(items)
+    null
+
 
     # @timeout = setTimeout =>
     #   return if query.length == 0
@@ -63,10 +63,16 @@ class EverythingView extends SelectListView
     #   #
     #   #   @setItems(items.concat(@items))
     # , 100
-    query
 
   appendItems: (items) ->
     @setItems(items.concat(@items))
+
+  show: ->
+    @filterEditorView.setText(lastQuery)
+    super
+    @updateResults(lastQuery)
+    @filterEditorView.model.selectAll()
+    @focusFilterEditor()
 
 module.exports = EverythingView
 
