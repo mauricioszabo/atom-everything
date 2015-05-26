@@ -13,5 +13,12 @@
   },
   "dependencies": {
     "atom-space-pen-views": "*"
+  },
+  "consumedServices": {
+    "everything.search": {
+      "versions": {
+        "0.1.0": "simpleSearcher"
+      }
+    }
   }
 }
