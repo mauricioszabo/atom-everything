@@ -1,4 +1,5 @@
 {SelectListView} = require 'atom-space-pen-views'
+{filter, match} = require 'fuzzaldrin'
 
 class EverythingView extends SelectListView
   timeout: 0
@@ -7,27 +8,33 @@ class EverythingView extends SelectListView
 
   initialize: ->
     super
-    @addClass('overlay from-top')
-    @setItems(['Hello', 'World', "Hello, World!"])
+    @addClass('overlay from-top everything')
     atom.workspaceView.append(this)
+    @on 'keydown', (evt) => console.log(evt)
 
   cancelled: ->
     @hide()
 
   viewForItem: (item) ->
-    if item.additionalInfo
-      "<li>#{item.displayName} <div class='pull-right key-binding'>" +
-        item.additionalInfo + "</div></li>"
-    else
-      "<li>#{item.displayName}</li>"
+    addInfo = item.additionalInfo
+    addInfo = if addInfo then [].concat(addInfo) else []
+    addTags = addInfo.map (e) => "<div class='pull-right key-binding'>#{e}</div>"
+
+    matches = match(item.displayName, lastQuery)
+
+    display = for char, i in item.displayName.split("")
+      if matches.indexOf(i) == -1
+        char
+      else
+        "<b>#{char}</b>"
+
+    "<li>#{display.join("")}#{addTags.join(" ")}</li>"
 
   confirmed: (item) ->
-    console.log(item)
-    console.log(item.function)
     item.function()
     @hide()
 
-  getFilterKey: -> "displayName"
+  getFilterKey: -> "queryString"
 
   registerProvider: (name, fn, whenToRun = -> true) ->
     @providers[name] = {
@@ -45,8 +52,21 @@ class EverythingView extends SelectListView
   updateResults: (query) ->
     @setItems([])
     for name, provider of @providers when provider.willRun(query)
-      provider.function(query).then (items) =>
-        @appendItems(items)
+      do =>
+        span = @find("span[data-provider='#{name}']")
+        if span.length == 0
+          @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
+          span = @find("span[data-provider='#{name}']")
+
+        provider.function(query).then (items) =>
+          span.detach()
+          items = filter(items, query, key: 'queryString')
+          @appendItems(items)
+        , (failure) =>
+          span.detach()
+          console.log("FAIL!", failure)
+          throw failure
+
     null
 
 
@@ -75,5 +95,3 @@ class EverythingView extends SelectListView
     @focusFilterEditor()
 
 module.exports = EverythingView
-
-window.M = EverythingView
