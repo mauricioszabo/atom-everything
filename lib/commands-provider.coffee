@@ -1,5 +1,10 @@
+evry = null
+
 module.exports = class
   name: "commands"
+
+  onStart: (finder) ->
+    evry = finder
 
   function: (search) -> new Promise (resolve) ->
     view = atom.views.getView(atom.workspace.getActiveTextEditor())
@@ -12,10 +17,13 @@ module.exports = class
 
         cmdName = command.name
         {
-          displayName: command.displayName,
-          queryString: command.displayName,
           function: ->
-            atom.workspaceView.trigger(cmdName)
+            event = new CustomEvent(cmdName, {bubbles: true, cancelable: true})
+            workspace = evry.previouslyFocusedElement[0]
+            workspace.dispatchEvent(event)
+
           additionalInfo: addInfo
+          displayName: command.displayName
+          queryString: command.displayName
         }
     resolve(commands)
