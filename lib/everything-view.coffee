@@ -1,6 +1,10 @@
 {SelectListView} = require 'atom-space-pen-views'
 {filter, match} = require 'fuzzaldrin'
 
+remote = require('remote')
+Menu = remote.require('menu')
+MenuItem = remote.require('menu-item')
+
 class EverythingView extends SelectListView
   timeout: 0
   providers: {}
@@ -11,7 +15,26 @@ class EverythingView extends SelectListView
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @storeFocusedElement()
-    # @on 'keydown', (evt) => console.log(evt)
+    @on 'keydown', (evt) =>
+      if(evt.keyCode == 9) # TAB
+        evt.preventDefault()
+        console.log("FOO")
+        item = @getSelectedItem()
+        console.log(item)
+        if item.commands
+          menu = new Menu()
+          for name, command of item.commands
+            do =>
+              cmd = command
+              item = new MenuItem(
+                label: name,
+                click: =>
+                  cmd()
+                  @cancel()
+              )
+              menu.append(item)
+          {top, left} = @find('li.selected').offset()
+          menu.popup(remote.getCurrentWindow(), left + 20, top + 10)
 
   cancelled: ->
     p.onStop(this) for _, p of @providers when p.onStop
