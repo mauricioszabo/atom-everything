@@ -1,11 +1,13 @@
 EverythingView = require './everything-view'
 CommandsProvider = require './commands-provider'
+GoogleProvider = require './google-provider'
 
 module.exports = Everything =
   evr: null
 
   providers: [
     new CommandsProvider()
+    new GoogleProvider()
   ]
 
   activate: (state) ->
@@ -18,7 +20,7 @@ module.exports = Everything =
     if !@evr
       @evr ?= new EverythingView()
       for provider in @providers
-        shouldRun = provider.shouldRun
-        shouldRun ?= -> true
-        @evr.registerProvider(provider.name, provider.function, shouldRun)
+        provider.shouldRun ?= -> true
+        @evr.registerProvider(provider)
     @evr.show()
+    window.evr = @evr

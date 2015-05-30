@@ -9,11 +9,17 @@ class EverythingView extends SelectListView
   initialize: ->
     super
     @addClass('overlay from-top everything')
-    atom.workspaceView.append(this)
-    @on 'keydown', (evt) => console.log(evt)
+    @pane = atom.workspace.addModalPanel(item: this, visible: false)
+    @storeFocusedElement()
+    # @on 'keydown', (evt) => console.log(evt)
 
   cancelled: ->
-    @hide()
+    p.onStop(this) for _, p of @providers when p.onStop
+    @pane.hide()
+
+  destroy: ->
+    @cancel()
+    @pane.destroy()
 
   viewForItem: (item) ->
     addInfo = item.additionalInfo
@@ -32,15 +38,12 @@ class EverythingView extends SelectListView
 
   confirmed: (item) ->
     item.function()
-    @hide()
+    @cancel()
 
   getFilterKey: -> "queryString"
 
-  registerProvider: (name, fn, whenToRun = -> true) ->
-    @providers[name] = {
-      function: fn,
-      willRun: whenToRun
-    }
+  registerProvider: (provider) ->
+    @providers[provider.name] = provider
 
   getFilterQuery: ->
     query = super
@@ -51,7 +54,7 @@ class EverythingView extends SelectListView
 
   updateResults: (query) ->
     @setItems([])
-    for name, provider of @providers when provider.willRun(query)
+    for name, provider of @providers when provider.shouldRun(query)
       do =>
         span = @find("span[data-provider='#{name}']")
         if span.length == 0
@@ -69,25 +72,12 @@ class EverythingView extends SelectListView
 
     null
 
-
-    # @timeout = setTimeout =>
-    #   return if query.length == 0
-    #   @setItems(["algo", "nada", "zero"])
-    #   # console.log("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=#{query}")
-    #   # getJSON "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=#{query}", (json) =>
-    #   #   console.log("SET ITEMS!")
-    #   #   console.log(json)
-    #   #   items = json.responseData.results.map (data) =>
-    #   #     data.titleNoFormatting
-    #   #   console.log(items)
-    #   #
-    #   #   @setItems(items.concat(@items))
-    # , 100
-
   appendItems: (items) ->
     @setItems(items.concat(@items))
 
   show: ->
+    p.onStart(this) for _, p of @providers when p.onStart
+    @pane.show()
     @filterEditorView.setText(lastQuery)
     super
     @updateResults(lastQuery)
