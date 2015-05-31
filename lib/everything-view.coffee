@@ -34,7 +34,7 @@ class EverythingView extends SelectListView
               )
               menu.append(item)
           {top, left} = @find('li.selected').offset()
-          menu.popup(remote.getCurrentWindow(), left + 20, top + 10)
+          menu.popup(remote.getCurrentWindow(), parseInt(left + 20), parseInt(top + 10))
 
   cancelled: ->
     p.onStop(this) for _, p of @providers when p.onStop
