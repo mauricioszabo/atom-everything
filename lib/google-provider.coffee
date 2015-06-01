@@ -1,5 +1,5 @@
 http = require 'http'
-child = require 'child_process'
+shell = require 'shell'
 
 module.exports = class
   name: "google"
@@ -23,20 +23,9 @@ module.exports = class
             displayName: result.titleNoFormatting,
             queryString: "?#{result.titleNoFormatting}",
             additionalInfo: result.url,
-            function: ->
-              child.spawnSync('google-chrome', ['--no-sandbox', result.url])
+            function: -> shell.openExternal(result.url)
           }
         resolve(items)
     , 500
-      # items = json.responseData.results.map (data) =>
-      #   data.titleNoFormatting
-      # console.log(items)
-        # {
-        #   displayName: command.displayName,
-        #   queryString: command.displayName,
-        #   function: ->
-        #     atom.workspaceView.trigger(cmdName)
-        #   additionalInfo: addInfo
-        # }
 
   shouldRun: (query) -> query[0] == '?' && query.length > 4
