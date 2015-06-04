@@ -18,9 +18,7 @@ class EverythingView extends SelectListView
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
         evt.preventDefault()
-        console.log("FOO")
         item = @getSelectedItem()
-        console.log(item)
         if item.commands
           menu = new Menu()
           for name, command of item.commands
@@ -39,6 +37,7 @@ class EverythingView extends SelectListView
   cancelled: ->
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
+    atom.views.getView(atom.workspace).focus()
 
   destroy: ->
     @cancel()

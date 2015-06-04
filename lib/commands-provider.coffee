@@ -21,7 +21,9 @@ module.exports = class
             event = new CustomEvent(cmdName, {bubbles: true, cancelable: true})
             workspace = evry.previouslyFocusedElement[0]
             workspace.dispatchEvent(event)
-
+          commands: {
+            "Copy command to clipboard": -> atom.clipboard.write cmdName
+          }
           additionalInfo: addInfo
           displayName: command.displayName
           queryString: command.displayName
