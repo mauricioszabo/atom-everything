@@ -14,7 +14,6 @@ class EverythingView extends SelectListView
     super
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
-    @storeFocusedElement()
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
         evt.preventDefault()
@@ -37,7 +36,6 @@ class EverythingView extends SelectListView
   cancelled: ->
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
-    atom.views.getView(atom.workspace).focus()
 
   destroy: ->
     @cancel()
@@ -98,6 +96,7 @@ class EverythingView extends SelectListView
     @setItems(items.concat(@items))
 
   show: ->
+    @storeFocusedElement()
     p.onStart(this) for _, p of @providers when p.onStart
     @pane.show()
     @filterEditorView.setText(lastQuery)
