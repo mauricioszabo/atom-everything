@@ -42,19 +42,18 @@ class EverythingView extends SelectListView
     @pane.destroy()
 
   viewForItem: (item) ->
-    addInfo = item.additionalInfo
-    addInfo = if addInfo then [].concat(addInfo) else []
-    addTags = addInfo.map (e) => "<div class='pull-right key-binding'>#{e}</div>"
-
-    matches = match(item.displayName, lastQuery)
+    matches = match(item.queryString, lastQuery)
+    index = item.queryString.toLowerCase().indexOf(item.displayName.toLowerCase())
 
     display = for char, i in item.displayName.split("")
-      if matches.indexOf(i) == -1
+      if index == -1 || matches.indexOf(i + index) == -1
         char
       else
         "<b>#{char}</b>"
 
-    "<li>#{display.join("")}#{addTags.join(" ")}</li>"
+    """<li class="two-lines">
+      <div>#{display.join("") || "&nbsp;"}</div>
+      <div class="add-info">#{item.additionalInfo || "&nbsp;"}</div></li>"""
 
   confirmed: (item) ->
     item.function()
@@ -85,7 +84,7 @@ class EverythingView extends SelectListView
           span.detach()
           items = filter(items, query, key: 'queryString')
           @appendItems(items)
-        , (failure) =>
+        .catch (failure) =>
           span.detach()
           console.log("FAIL!", failure)
           throw failure

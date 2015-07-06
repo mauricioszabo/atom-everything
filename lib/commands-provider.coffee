@@ -6,7 +6,6 @@ module.exports = class
 
   onStart: (finder) ->
     prev = finder.previouslyFocusedElement[0]
-    console.log prev
     if prev and prev isnt document.body
       eventElement = prev
     else
@@ -16,6 +15,7 @@ module.exports = class
     commands = atom.commands.findCommands(target: eventElement).map (command) ->
       addInfo = for b in bindings when b.command == command.name
         b.keystrokes
+      addTags = addInfo.map (e) => "<div class='key-binding'>#{e}</div>"
 
       cmdName = command.name
       {
@@ -26,7 +26,7 @@ module.exports = class
         commands: {
           "Copy command to clipboard": -> atom.clipboard.write cmdName
         }
-        additionalInfo: addInfo
+        additionalInfo: addTags.join(" ")
         displayName: command.displayName
         queryString: command.displayName
       }
