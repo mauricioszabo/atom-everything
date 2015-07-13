@@ -1,7 +1,7 @@
 {
   "name": "everything",
   "main": "./lib/everything",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Everything is a searcher for multiple providers",
   "activationCommands": {
     "atom-workspace": "everything:fuzzy-finder"
