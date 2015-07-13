@@ -5,8 +5,11 @@ class TestProvider
 
   result: null
 
-  shouldRun: -> true
+  runTimes: 0
+
+  shouldRun: (query) -> query.length > 1
   function: (query) -> new Promise (resolve) =>
+    @runTimes += 1
     resolve [
       {
         displayName: "Foo"
@@ -38,9 +41,18 @@ describe "EverythingView", ->
 
   it "matches by query string, not by display", ->
     everything.show()
+    window.e2 = everything
     setText 'strb'
     assertSelected "Bar"
 
+  it "doesn't query if shouldRun is false", ->
+    everything = new EverythingView()
+    provider = new TestProvider()
+    everything.registerProvider(provider)
+    setText 'f'
+    setText 'foo'
+    expect provider.runTimes
+    .toEqual 1
 
   assertSelected = (text) ->
     waitsFor -> workspace.querySelector('.everything li.two-lines')
