@@ -1,9 +1,14 @@
-{SelectListView} = require 'atom-space-pen-views'
-{filter, match} = require 'fuzzaldrin'
+{SelectListView, $} = require 'atom-space-pen-views'
+{filter, match, score} = require 'fuzzaldrin'
 
 remote = require('remote')
 Menu = remote.require('menu')
 MenuItem = remote.require('menu-item')
+
+indexOfArray = (array, fn) ->
+  for e, i in array
+    return i if fn(e)
+  null
 
 class EverythingView extends SelectListView
   timeout: 0
@@ -14,6 +19,8 @@ class EverythingView extends SelectListView
     super
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
+    @filteredItems = []
+
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
         evt.preventDefault()
@@ -36,6 +43,39 @@ class EverythingView extends SelectListView
   cancelled: ->
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
+
+  addItem: (item) ->
+    index = indexOfArray(@filteredItems, ({score}) -> score < item.score)
+    if index?
+      @filteredItems.splice(index, 0, item)
+      itemView = @generateItem(item)
+      @list.find("li:nth-child(#{index + 1})").before(itemView)
+    else
+      @filteredItems.push(item)
+      @list.append(@generateItem(item))
+    # For now, we select only the first item.
+    # We should ignore this if user already selected another item.
+    @selectItemView(@list.find('li:first'))
+
+
+  populateList: ->
+    return unless @filteredItems?
+    @list.empty()
+    if @filteredItems.length
+      @setError(null)
+
+      for i in [0...Math.min(@filteredItems.length, @maxItems)]
+        itemView = @generateItem(@filteredItems[i])
+        @list.append(itemView)
+
+      @selectItemView(@list.find('li:first'))
+    else
+      @setError(@getEmptyMessage(@items.length, @filteredItems.length))
+
+  generateItem: (item) ->
+    itemView = $(@viewForItem(item))
+    itemView.data('select-list-item', item)
+    itemView
 
   destroy: ->
     @cancel()
