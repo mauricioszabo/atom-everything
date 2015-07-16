@@ -63,7 +63,7 @@ describe "EverythingView", ->
     expect workspace.querySelector('li.two-lines.selected div').innerText
     .toEqual "Foo"
 
-  fit "adds a provider class on the item in the view", ->
+  it "adds a provider class on the item in the view", ->
     setText 'foo'
     assertSelected "Foo"
     runs ->
