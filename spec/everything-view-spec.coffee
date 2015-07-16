@@ -42,7 +42,6 @@ describe "EverythingView", ->
 
   it "matches by query string, not by display", ->
     everything.show()
-    window.e2 = everything
     setText 'strb'
     assertSelected "Bar"
 
@@ -63,6 +62,13 @@ describe "EverythingView", ->
     everything.show()
     expect workspace.querySelector('li.two-lines.selected div').innerText
     .toEqual "Foo"
+
+  fit "adds a provider class on the item in the view", ->
+    setText 'foo'
+    assertSelected "Foo"
+    runs ->
+      expect workspace.querySelector('li.two-lines.tst-provider')
+      .toBeTruthy()
 
   assertSelected = (text) ->
     waitsFor -> workspace.querySelector('.everything li.two-lines')
