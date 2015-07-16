@@ -20,6 +20,8 @@ class EverythingView extends SelectListView
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @filteredItems = []
+    @shouldUpdate = true
+    @setLoading() # We do our loading alone!
 
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
@@ -45,32 +47,41 @@ class EverythingView extends SelectListView
     @pane.hide()
 
   addItem: (item) ->
-    index = indexOfArray(@filteredItems, ({score}) -> score < item.score)
+    return if item.score == 0
+    index = indexOfArray(@filteredItems, (fitem) -> fitem.score < item.score)
     if index?
       @filteredItems.splice(index, 0, item)
-      itemView = @generateItem(item)
-      @list.find("li:nth-child(#{index + 1})").before(itemView)
+      # itemView = @generateItem(item)
+      # @list.find("li:nth-child(#{index + 1})").before(itemView)
     else
       @filteredItems.push(item)
-      @list.append(@generateItem(item))
-    # For now, we select only the first item.
-    # We should ignore this if user already selected another item.
-    @selectItemView(@list.find('li:first'))
-
+      # @list.append(@generateItem(item))
+    @scheduleUpdate()
 
   populateList: ->
-    return unless @filteredItems?
+    query = @getFilterQuery()
+    @updateResults(query)
+
+  scheduleUpdate: ->
+    if @shouldUpdate
+      @shouldUpdate = false
+      setTimeout => @updateView()
+
+  updateView: ->
+    @shouldUpdate = true
     @list.empty()
     if @filteredItems.length
-      @setError(null)
+      @setError()
 
       for i in [0...Math.min(@filteredItems.length, @maxItems)]
         itemView = @generateItem(@filteredItems[i])
         @list.append(itemView)
 
+      # For now, we select only the first item.
+      # We should ignore this if user already selected another item.
       @selectItemView(@list.find('li:first'))
     else
-      @setError(@getEmptyMessage(@items.length, @filteredItems.length))
+      @setError(@getEmptyMessage(0, @filteredItems.length))
 
   generateItem: (item) ->
     itemView = $(@viewForItem(item))
@@ -108,31 +119,37 @@ class EverythingView extends SelectListView
     query = super
     return query if query == lastQuery
     lastQuery = query
-    @updateResults(query)
     query
 
   updateResults: (query) ->
-    @setItems([])
+    @filteredItems = []
+    @scheduleUpdate()
     for name, provider of @providers when provider.shouldRun(query)
       do =>
         span = @find("span[data-provider='#{name}']")
         if span.length == 0
           @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
-          span = @find("span[data-provider='#{name}']")
 
-        provider.function(query).then (items) =>
-          span.detach()
-          items = filter(items, query, key: 'queryString')
-          @appendItems(items)
-        .catch (failure) =>
-          span.detach()
-          console.log("FAIL!", failure)
-          throw failure
+        result = provider.function(query)
+        @treatPromise(result, query, name)
 
     null
 
-  appendItems: (items) ->
-    @setItems(items.concat(@items))
+  treatPromise: (result, query, providerName) ->
+    span = @loadingProviderElement(providerName)
+    result.then (items) =>
+      span.detach()
+      items.forEach (i) =>
+        item = Object.create(i)
+        item.providerName = providerName
+        item.score ?= score(item.queryString, query)
+        @addItem(item)
+    .catch (failure) =>
+      span.detach()
+      console.log("FAIL!", failure)
+      throw failure
+
+  loadingProviderElement: (name) -> @find("span[data-provider='#{name}']")
 
   show: ->
     @storeFocusedElement()
