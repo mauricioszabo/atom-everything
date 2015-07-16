@@ -1,5 +1,5 @@
 {SelectListView, $} = require 'atom-space-pen-views'
-{filter, match, score} = require 'fuzzaldrin'
+fuzzaldrin = require 'fuzzaldrin'
 
 remote = require('remote')
 Menu = remote.require('menu')
@@ -17,6 +17,7 @@ class EverythingView extends SelectListView
 
   initialize: ->
     super
+    @fuzzaldrin = fuzzaldrin
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @filteredItems = []
@@ -93,7 +94,7 @@ class EverythingView extends SelectListView
     @pane.destroy()
 
   viewForItem: (item) ->
-    matches = match(item.queryString, lastQuery)
+    matches = fuzzaldrin.match(item.queryString, lastQuery)
     index = item.queryString.toLowerCase().indexOf(item.displayName.toLowerCase())
 
     display = for char, i in item.displayName.split("")
@@ -102,7 +103,8 @@ class EverythingView extends SelectListView
       else
         "<b>#{char}</b>"
 
-    """<li class="two-lines">
+    console.log(item)
+    """<li class="two-lines #{item.providerName}">
       <div>#{display.join("") || "&nbsp;"}</div>
       <div class="add-info">#{item.additionalInfo || "&nbsp;"}</div></li>"""
 
@@ -142,7 +144,7 @@ class EverythingView extends SelectListView
       items.forEach (i) =>
         item = Object.create(i)
         item.providerName = providerName
-        item.score ?= score(item.queryString, query)
+        item.score ?= fuzzaldrin.score(item.queryString, query)
         @addItem(item)
     .catch (failure) =>
       span.detach()
