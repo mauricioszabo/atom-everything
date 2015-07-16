@@ -103,8 +103,13 @@ class EverythingView extends SelectListView
       else
         "<b>#{char}</b>"
 
+    providerDiv = if atom.config.get('everything.showProvidersName')
+      "<div class='key-binding pull-right'>#{item.providerName}</div>"
+    else
+      ""
+
     """<li class="two-lines #{item.providerName}">
-      <div>#{display.join("") || "&nbsp;"}</div>
+      #{providerDiv}<div>#{display.join("") || "&nbsp;"}</div>
       <div class="add-info">#{item.additionalInfo || "&nbsp;"}</div></li>"""
 
   confirmed: (item) ->

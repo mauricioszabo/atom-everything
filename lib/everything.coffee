@@ -2,7 +2,12 @@ EverythingView = require './everything-view'
 CommandsProvider = require './commands-provider'
 GoogleProvider = require './google-provider'
 
-module.exports = Everything =
+module.exports =
+  config:
+    showProvidersName:
+      type: 'boolean'
+      default: true
+
   evr: null
 
   providers: [
