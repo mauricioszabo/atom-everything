@@ -103,7 +103,6 @@ class EverythingView extends SelectListView
       else
         "<b>#{char}</b>"
 
-    console.log(item)
     """<li class="two-lines #{item.providerName}">
       <div>#{display.join("") || "&nbsp;"}</div>
       <div class="add-info">#{item.additionalInfo || "&nbsp;"}</div></li>"""
