@@ -1,6 +1,6 @@
 {Disposable} = require 'atom'
 
-module.exports = class
+module.exports = class Stream
   constructor: ->
     @_internalArray = []
     @_listeners = new Set()
@@ -23,5 +23,6 @@ module.exports = class
     @_listeners.forEach (fn) -> fn(element)
 
   close: ->
+    return if @_closed
     @_closed = true
     @_closeListeners.forEach (fn) -> fn()
