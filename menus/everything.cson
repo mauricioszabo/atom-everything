@@ -2,19 +2,19 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Toggle everything'
-      'command': 'everything:toggle'
+      'label': 'Open Everything'
+      'command': 'everything:fuzzy-finder'
     }
   ]
 'menu': [
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'everything'
+      'label': 'Everything'
       'submenu': [
         {
-          'label': 'Toggle'
-          'command': 'everything:toggle'
+          'label': 'Open Everything'
+          'command': 'everything:fuzzy-finder'
         }
       ]
     ]
