@@ -12,7 +12,6 @@ describe "Stream", ->
     stream.push("Foo")
     stream.push("Bar")
 
-    console.log data
     expect(data).toEqual(["Foo", "Bar"])
 
   it "calls for every element already added", ->
@@ -35,8 +34,8 @@ describe "Stream", ->
     stream.onData (e) -> data.push(e)
     stream.push("Bar")
     stream.close()
-    stream.close()
     stream.onClose -> data.push("Closed!")
+    stream.close()
     stream.push("Baz")
     expect(data).toEqual(["Foo", "Bar", "Closed!"])
 
@@ -64,3 +63,4 @@ describe "Stream", ->
     disposable.dispose()
     stream.push("Bar")
     expect(data).toEqual(["Foo"])
+    window.S = Stream
