@@ -33,4 +33,10 @@ module.exports = class
 
   function: (search) -> new Promise (resolve) ->
     view = atom.views.getView(atom.workspace.getActiveTextEditor())
-    resolve(commands)
+    if search == ''
+      resolve commands.map (c) -> 
+        command = Object.create(c)
+        command.score = 2
+        command
+    else
+      resolve(commands)
