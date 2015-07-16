@@ -33,6 +33,7 @@ describe "EverythingView", ->
     everything = new EverythingView()
     provider = new TestProvider()
     everything.registerProvider(provider)
+    jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
 
   it "displays provider information", ->
     everything.show()
@@ -54,6 +55,15 @@ describe "EverythingView", ->
     expect provider.runTimes
     .toEqual 1
 
+  xit "shows items without setting timeouts the first way it runs", ->
+    provider.shouldRun = -> true
+    provider.function = -> new Promise (resolve) ->
+      resolve [displayName: "Foo", score: 1, queryString: 'Foo']
+
+    everything.show()
+    expect workspace.querySelector('li.two-lines.selected div').innerText
+    .toEqual "Foo"
+
   assertSelected = (text) ->
     waitsFor -> workspace.querySelector('.everything li.two-lines')
     runs ->
@@ -62,4 +72,4 @@ describe "EverythingView", ->
 
   setText = (text) ->
     everything.filterEditorView.setText(text)
-    everything.getFilterQuery()
+    everything.populateList()
