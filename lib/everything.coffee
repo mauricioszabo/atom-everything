@@ -19,6 +19,11 @@ module.exports =
     atom.commands.add 'atom-workspace', 'everything:fuzzy-finder', => @showEverything()
 
   simpleSearcher: (provider) ->
+    provider.onQuery = provider.function
+    console.log(provider)
+    @providers.push(provider)
+
+  onQuerySupport: (provider) ->
     @providers.push(provider)
 
   showEverything: ->

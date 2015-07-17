@@ -136,7 +136,7 @@ class EverythingView extends SelectListView
         if span.length == 0
           @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
 
-        result = provider.function(query)
+        result = provider.onQuery(query)
         @treatPromise(result, query, name)
 
     null

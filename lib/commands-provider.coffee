@@ -31,10 +31,10 @@ module.exports = class
         queryString: command.displayName
       }
 
-  function: (search) -> new Promise (resolve) ->
+  onQuery: (search) -> new Promise (resolve) ->
     view = atom.views.getView(atom.workspace.getActiveTextEditor())
     if search == ''
-      resolve commands.map (c) -> 
+      resolve commands.map (c) ->
         command = Object.create(c)
         command.score = 2
         command

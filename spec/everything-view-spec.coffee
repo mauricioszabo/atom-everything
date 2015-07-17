@@ -8,7 +8,7 @@ class TestProvider
   runTimes: 0
 
   shouldRun: (query) -> query.length > 1
-  function: (query) -> new Promise (resolve) =>
+  onQuery: (query) -> new Promise (resolve) =>
     @runTimes += 1
     resolve [
       {

@@ -13,7 +13,7 @@ module.exports = class
       res.on "data", (chunk) -> content += chunk
       res.on "end", -> resolve JSON.parse(content)
 
-  function: (query) -> new Promise (resolve) ->
+  onQuery: (query) -> new Promise (resolve) ->
     clearTimeout timeout
     timeout = setTimeout ->
       getJSON "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=#{query.substring(1)}"

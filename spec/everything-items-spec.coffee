@@ -23,7 +23,7 @@ describe "EverythingView's Items", ->
     provider =
       name: 'test'
       shouldRun: -> true
-      function: -> new Promise (resolve) ->
+      onQuery: -> new Promise (resolve) ->
         resolve [
           { displayName: "Foo", queryString: "Foo" },
           { displayName: "Foo2", queryString: "Foo2" },
