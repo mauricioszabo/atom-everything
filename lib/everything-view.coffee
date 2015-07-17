@@ -14,14 +14,14 @@ class EverythingView extends SelectListView
   timeout: 0
   providers: {}
   lastQuery = ""
+  fuzzaldrin: fuzzaldrin
+  filteredItems: []
+  shouldUpdate: true
 
   initialize: ->
     super
-    @fuzzaldrin = fuzzaldrin
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
-    @filteredItems = []
-    @shouldUpdate = true
     @setLoading() # We do our loading alone!
 
     @on 'keydown', (evt) =>
