@@ -20,7 +20,6 @@ module.exports =
 
   simpleSearcher: (provider) ->
     provider.onQuery = provider.function
-    console.log(provider)
     @providers.push(provider)
 
   onQuerySupport: (provider) ->
@@ -33,4 +32,3 @@ module.exports =
         provider.shouldRun ?= -> true
         @evr.registerProvider(provider)
     @evr.show()
-    window.evr = @evr
