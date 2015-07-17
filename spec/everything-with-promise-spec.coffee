@@ -24,7 +24,7 @@ class TestProvider
       }
     ]
 
-describe "EverythingView", ->
+describe "EverythingView using Promise API", ->
   workspace = everything = provider = null
 
   beforeEach ->

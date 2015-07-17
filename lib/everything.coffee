@@ -22,7 +22,7 @@ module.exports =
     provider.onQuery = provider.function
     @providers.push(provider)
 
-  onQuerySupport: (provider) ->
+  streamSearcher: (provider) ->
     @providers.push(provider)
 
   showEverything: ->

@@ -1,8 +1,9 @@
 {SelectListView, $} = require 'atom-space-pen-views'
-fuzzaldrin = require 'fuzzaldrin'
+{CompositeDisposable} = require 'atom'
 
 remote = require('remote')
 Menu = remote.require('menu')
+fuzzaldrin = require 'fuzzaldrin'
 MenuItem = remote.require('menu-item')
 
 indexOfArray = (array, fn) ->
@@ -24,6 +25,7 @@ class EverythingView extends SelectListView
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @setLoading() # We do our loading alone!
+    @streams = new CompositeDisposable()
 
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
@@ -45,6 +47,7 @@ class EverythingView extends SelectListView
           menu.popup(remote.getCurrentWindow(), parseInt(left + 20), parseInt(top + 10))
 
   cancelled: ->
+    @streams.dispose()
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
 
@@ -58,6 +61,7 @@ class EverythingView extends SelectListView
     else
       @filteredItems.push(item)
       # @list.append(@generateItem(item))
+    @filteredItems.pop() if @filteredItems.length > @maxItems
     @scheduleUpdate()
 
   populateList: ->
@@ -130,7 +134,10 @@ class EverythingView extends SelectListView
 
   updateResults: (query) ->
     @filteredItems = []
+    @streams.dispose()
+    @streams = new CompositeDisposable()
     @scheduleUpdate()
+
     for name, provider of @providers when provider.shouldRun(query)
       do =>
         span = @find("span[data-provider='#{name}']")
@@ -142,8 +149,7 @@ class EverythingView extends SelectListView
           @treatPromise(result, query, name)
         else # It's probaby a stream
           @treatStream(result, query, name)
-
-    null
+    null #Please, don't create lots of arrays!
 
   treatPromise: (result, query, providerName) ->
     span = @loadingProviderElement(providerName)
@@ -157,9 +163,8 @@ class EverythingView extends SelectListView
 
   treatStream: (result, query, providerName) ->
     span = @loadingProviderElement(providerName)
-    result.onData (item) =>
-      @scoreItem(item, query, name)
-    result.onClose => span.detach()
+    @streams.add result.onData (item) => @scoreItem(item, query, name)
+    @streams.add result.onClose => span.detach()
 
   scoreItem: (i, query, name) ->
     item = Object.create(i)

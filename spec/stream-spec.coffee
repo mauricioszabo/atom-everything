@@ -62,4 +62,6 @@ describe "Stream", ->
     stream.push("Foo")
     disposable.dispose()
     stream.push("Bar")
-    expect(data).toEqual(["Foo"])
+
+    stream.onData (e) -> data.push(e)
+    expect(data).toEqual(["Foo", "Foo", "Bar"])
