@@ -63,4 +63,3 @@ describe "Stream", ->
     disposable.dispose()
     stream.push("Bar")
     expect(data).toEqual(["Foo"])
-    window.S = Stream
