@@ -17,6 +17,7 @@ class EverythingView extends SelectListView
   fuzzaldrin: fuzzaldrin
   filteredItems: []
   shouldUpdate: true
+  Stream: require('./stream')
 
   initialize: ->
     super
@@ -137,7 +138,10 @@ class EverythingView extends SelectListView
           @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
 
         result = provider.onQuery(query)
-        @treatPromise(result, query, name)
+        if result.then # It's a promise, probably
+          @treatPromise(result, query, name)
+        else # It's probaby a stream
+          @treatStream(result, query, name)
 
     null
 
@@ -145,15 +149,23 @@ class EverythingView extends SelectListView
     span = @loadingProviderElement(providerName)
     result.then (items) =>
       span.detach()
-      items.forEach (i) =>
-        item = Object.create(i)
-        item.providerName = providerName
-        item.score ?= fuzzaldrin.score(item.queryString, query)
-        @addItem(item)
+      items.forEach (item) => @scoreItem(item, query, providerName)
     .catch (failure) =>
       span.detach()
       console.log("FAIL!", failure)
       throw failure
+
+  treatStream: (result, query, providerName) ->
+    span = @loadingProviderElement(providerName)
+    result.onData (item) =>
+      @scoreItem(item, query, name)
+    result.onClose => span.detach()
+
+  scoreItem: (i, query, name) ->
+    item = Object.create(i)
+    item.providerName = name
+    item.score ?= fuzzaldrin.score(item.queryString, query)
+    @addItem(item)
 
   loadingProviderElement: (name) -> @find("span[data-provider='#{name}']")
 
