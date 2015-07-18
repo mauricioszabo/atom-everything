@@ -6,24 +6,29 @@ class TestProvider
   shouldRun: -> true
   onStart: (evry) -> Stream = evry.Stream
   onQuery: (query) ->
+    console.log 'onQuery'
     stream = new Stream()
+    stream.id = Math.random()
+    console.log "Stream:", stream
     setTimeout =>
+      console.log "sending FOO"
       stream.push(
         displayName: "Foo"
         queryString: "str Foo"
         score: 2
       )
-    , 300
+    , 3000
 
     setTimeout =>
+      console.log "sending BAR"
       stream.push(
         displayName: "Bar"
         queryString: "str Bar"
         score: 1
       )
-    , 200
+    , 2000
 
-    setTimeout (=> stream.close()), 400
+    setTimeout (=> stream.close()), 4000
     stream
 
 describe "EverythingView using Stream API", ->
@@ -47,7 +52,8 @@ describe "EverythingView using Stream API", ->
     everything.registerProvider(provider)
     everything
 
-  fit "makes every element appear little by little", ->
+  it "makes every element appear little by little", ->
+    console.log "Teste1"
     everything = createEverything()
     everything.show()
 
@@ -70,7 +76,8 @@ describe "EverythingView using Stream API", ->
       expect(selectedElement().innerText).toEqual "Foo"
       expect(loading(everything)).toBe(false)
 
-  fit "disposes old streams when typing new text", ->
+  it "disposes old streams when typing new text", ->
+    console.log "Teste2"
     everything = createEverything()
     everything.show()
     setText everything, "foo"
