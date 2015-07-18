@@ -12,16 +12,15 @@ indexOfArray = (array, fn) ->
   null
 
 class EverythingView extends SelectListView
-  timeout: 0
-  providers: {}
   lastQuery = ""
   fuzzaldrin: fuzzaldrin
-  filteredItems: []
   shouldUpdate: true
   Stream: require('./stream')
 
   initialize: ->
     super
+    @providers = {}
+    @filteredItems = []
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @setLoading() # We do our loading alone!
@@ -133,8 +132,8 @@ class EverythingView extends SelectListView
     query
 
   updateResults: (query) ->
-    @filteredItems = []
     @streams.dispose()
+    @filteredItems = []
     @streams = new CompositeDisposable()
     @scheduleUpdate()
 
@@ -158,12 +157,13 @@ class EverythingView extends SelectListView
       items.forEach (item) => @scoreItem(item, query, providerName)
     .catch (failure) =>
       span.detach()
-      console.log("FAIL!", failure)
-      throw failure
+      atom.notifications.addError("Uncaught error on provider #{providerName}",
+        detail: "Message: #{failure.message}\n#{failure.stack}")
 
   treatStream: (result, query, providerName) ->
     span = @loadingProviderElement(providerName)
-    @streams.add result.onData (item) => @scoreItem(item, query, name)
+    @streams.add result.onData (item) =>
+      @scoreItem(item, query, name)
     @streams.add result.onClose => span.detach()
 
   scoreItem: (i, query, name) ->
