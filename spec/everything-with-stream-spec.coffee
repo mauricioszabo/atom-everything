@@ -6,29 +6,25 @@ class TestProvider
   shouldRun: -> true
   onStart: (evry) -> Stream = evry.Stream
   onQuery: (query) ->
-    console.log 'onQuery'
     stream = new Stream()
     stream.id = Math.random()
-    console.log "Stream:", stream
     setTimeout =>
-      console.log "sending FOO"
       stream.push(
         displayName: "Foo"
         queryString: "str Foo"
         score: 2
       )
-    , 3000
+    , 300
 
     setTimeout =>
-      console.log "sending BAR"
       stream.push(
         displayName: "Bar"
         queryString: "str Bar"
         score: 1
       )
-    , 2000
+    , 200
 
-    setTimeout (=> stream.close()), 4000
+    setTimeout (=> stream.close()), 400
     stream
 
 describe "EverythingView using Stream API", ->
@@ -36,65 +32,57 @@ describe "EverythingView using Stream API", ->
 
   createEverything = ->
     jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
-    # jasmine.Clock.useMock()
-    # spyOn(window, 'setTimeout').andCallFake (fn, milis) ->
-    #   if milis
-    #     jasmine.Clock.installed.setTimeout(fn, milis)
-    #   else
-    #     fn()
 
     workspace = atom.views.getView(atom.workspace)
     jasmine.attachToDOM(workspace)
     EverythingView = require '../lib/everything-view'
 
-    everything = new EverythingView()
+    evry = new EverythingView()
     provider = new TestProvider()
-    everything.registerProvider(provider)
-    everything
+    evry.registerProvider(provider)
+    evry
 
   it "makes every element appear little by little", ->
-    console.log "Teste1"
-    everything = createEverything()
-    everything.show()
+    evry = createEverything()
+    evry.show()
 
-    console.log "Starting..."
     expect(selectedElement()).toBeFalsey
-    expect(loading(everything)).toBe(true)
+    expect(loading(evry)).toBe(true)
 
     waitsFor -> selectedElement()
     runs ->
       expect(selectedElement().innerText).toEqual "Bar"
-      expect(loading(everything)).toBe(true)
+      expect(loading(evry)).toBe(true)
 
     waitsFor -> selectedElement().innerText == "Foo"
     runs ->
       expect(selectedElement().innerText).toEqual "Foo"
-      expect(loading(everything)).toBe(true)
+      expect(loading(evry)).toBe(true)
 
-    waitsFor -> !loading(everything)
+    waitsFor -> !loading(evry)
     runs ->
       expect(selectedElement().innerText).toEqual "Foo"
-      expect(loading(everything)).toBe(false)
+      expect(loading(evry)).toBe(false)
 
   it "disposes old streams when typing new text", ->
-    console.log "Teste2"
-    everything = createEverything()
-    everything.show()
-    setText everything, "foo"
+    evry = createEverything(true)
+    evry.show()
+    setText evry, "foo"
 
-    waitsFor -> selectedElement() && selectedElement().innerText == 'Foo'
+    waitsFor ->
+      selectedElement() && selectedElement().innerText == 'Foo'
     runs ->
-      expect(everything.filteredItems.length).toEqual(2)
+      expect(evry.filteredItems.length).toEqual(2)
 
-      setText everything, "bar"
+      setText evry, "bar"
       waitsFor -> !selectedElement()
       runs ->
-        expect(everything.filteredItems).toEqual([])
+        expect(evry.filteredItems).toEqual([])
 
         waitsFor ->
           selectedElement() && selectedElement().innerText == 'Foo'
         runs ->
-          expect(everything.filteredItems.length).toEqual(2)
+          expect(evry.filteredItems.length).toEqual(2)
 
   selectedElement = -> workspace.querySelector('li.two-lines.selected div')
   loading = (e) -> e.loadingProviderElement('tst-provider').length > 0
