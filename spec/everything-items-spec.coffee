@@ -29,7 +29,6 @@ describe "EverythingView's Items", ->
           { displayName: "Foo2", queryString: "Foo2" },
           { displayName: "Bar", queryString: "Bar" }
         ]
-
     everything.registerProvider(provider)
     everything.show()
     # We should check this case - when a provider returns later.
