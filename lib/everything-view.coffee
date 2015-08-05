@@ -17,9 +17,12 @@ class EverythingView extends SelectListView
   shouldUpdate: true
   Stream: require('./stream')
 
-  initialize: ->
+  initialize: (config) ->
     super
+    @config = config || {}
     @providers = {}
+    @prefixes = []
+    @providersByPrefix = {}
     @filteredItems = []
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
@@ -122,9 +125,6 @@ class EverythingView extends SelectListView
 
   getFilterKey: -> "queryString"
 
-  registerProvider: (provider) ->
-    @providers[provider.name] = provider
-
   getFilterQuery: ->
     query = super
     return query if query == lastQuery
@@ -143,7 +143,9 @@ class EverythingView extends SelectListView
         if span.length == 0
           @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
 
+        console.log("Getting result of provider", provider.name)
         result = provider.onQuery(query)
+        console.log(result)
         if result.then # It's a promise, probably
           @treatPromise(result, query, name)
         else # It's probaby a stream
@@ -183,5 +185,18 @@ class EverythingView extends SelectListView
     @updateResults(lastQuery)
     @filterEditorView.model.selectAll()
     @focusFilterEditor()
+
+  registerProvider: (provider) ->
+    # Sets a config for provider prefix
+    config = atom.config.get('everything') || {}
+    key = "#{provider.name}ProviderTrigger"
+    if !config[key]
+      provider.defaultPrefix ?= ""
+      atom.config.set("everything.#{key}", provider.defaultPrefix)
+    # Adds into provider list
+    @providers[provider.name] = provider
+
+    # prefix = atom.config.get("everything.#{provider.name}ProviderPrefix")
+    # provider.defaultPrefix = provider.defaultPrefix.trim()
 
 module.exports = EverythingView
