@@ -8,7 +8,7 @@ class TestProvider
   runTimes: 0
 
   shouldRun: (query) -> query.length > 1
-  function: (query) -> new Promise (resolve) =>
+  onQuery: (query) -> new Promise (resolve) =>
     @runTimes += 1
     resolve [
       {
@@ -24,7 +24,7 @@ class TestProvider
       }
     ]
 
-describe "EverythingView", ->
+describe "EverythingView using Promise API", ->
   workspace = everything = provider = null
 
   beforeEach ->
@@ -34,6 +34,7 @@ describe "EverythingView", ->
     provider = new TestProvider()
     everything.registerProvider(provider)
     jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
+    spyOn(atom.config, 'set')
 
   it "displays provider information", ->
     everything.show()

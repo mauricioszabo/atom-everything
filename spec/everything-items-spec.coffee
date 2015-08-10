@@ -5,8 +5,10 @@ describe "EverythingView's Items", ->
 
   beforeEach ->
     workspace = atom.views.getView(atom.workspace)
+    jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
     jasmine.attachToDOM(workspace)
     everything = new EverythingView()
+    spyOn(atom.config, 'set')
 
   it "adds items in the correct score", ->
     i1 = createItem("A", 1)
@@ -23,13 +25,12 @@ describe "EverythingView's Items", ->
     provider =
       name: 'test'
       shouldRun: -> true
-      function: -> new Promise (resolve) ->
+      onQuery: -> new Promise (resolve) ->
         resolve [
           { displayName: "Foo", queryString: "Foo" },
           { displayName: "Foo2", queryString: "Foo2" },
           { displayName: "Bar", queryString: "Bar" }
         ]
-
     everything.registerProvider(provider)
     everything.show()
     # We should check this case - when a provider returns later.
@@ -38,14 +39,14 @@ describe "EverythingView's Items", ->
     everything.filterEditorView.setText("Fo")
     everything.populateList()
 
-    waitsFor -> everything.filteredItems.length > 0
+    waitsFor ->
+      everything.filteredItems.length > 0
     runs ->
       expect everything.filteredItems.map (e) -> e.displayName
       .toEqual ["Foo", "Foo2"]
 
       expect everything.filteredItems.map (e) -> e.score
       .toEqual [score("Foo", "Fo"), score("Foo2", "Fo")]
-
 
   createItem = (name, score) ->
     { displayName: name, score: score, queryString: name }

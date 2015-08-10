@@ -18,7 +18,8 @@
   "consumedServices": {
     "everything.search": {
       "versions": {
-        "0.1.0": "simpleSearcher"
+        "0.1.0": "simpleSearcher",
+        "0.3.0": "streamSearcher"
       }
     }
   }

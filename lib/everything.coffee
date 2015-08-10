@@ -11,21 +11,30 @@ module.exports =
   evr: null
 
   providers: [
-    new CommandsProvider()
-    new GoogleProvider()
   ]
 
   activate: (state) ->
     atom.commands.add 'atom-workspace', 'everything:fuzzy-finder', => @showEverything()
 
   simpleSearcher: (provider) ->
-    @providers.push(provider)
+    provider.onQuery = provider.function
+    provider.shouldRun ?= -> true
+    @getEvr().registerProvider(provider)
+
+  streamSearcher: (provider) ->
+    provider.shouldRun ?= -> true
+    @getEvr().registerProvider(provider)
 
   showEverything: ->
-    if !@evr
-      @evr ?= new EverythingView()
-      for provider in @providers
-        provider.shouldRun ?= -> true
-        @evr.registerProvider(provider)
-    @evr.show()
-    window.evr = @evr
+    @getEvr().show()
+
+  getEvr: ->
+    @evr ?= do =>
+      e = new EverythingView()
+      p = new CommandsProvider()
+      p.shouldRun ?= -> true
+      e.registerProvider(p)
+      p = new GoogleProvider()
+      p.shouldRun ?= -> true
+      e.registerProvider(p)
+      e
