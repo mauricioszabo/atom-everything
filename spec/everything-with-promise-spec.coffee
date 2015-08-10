@@ -34,6 +34,7 @@ describe "EverythingView using Promise API", ->
     provider = new TestProvider()
     everything.registerProvider(provider)
     jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
+    spyOn(atom.config, 'set')
 
   it "displays provider information", ->
     everything.show()

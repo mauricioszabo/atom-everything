@@ -30,6 +30,9 @@ class TestProvider
 describe "EverythingView using Stream API", ->
   workspace = null
 
+  beforeEach ->
+    spyOn(atom.config, 'set')
+
   createEverything = ->
     jasmine.unspy(window, 'setTimeout') # Stupid ATOM...
 
