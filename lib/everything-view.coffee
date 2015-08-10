@@ -29,6 +29,7 @@ module.exports = class EverythingView extends SelectListView
     @setLoading() # We do our loading alone!
     @append "<div id='providers'>"
     @streams = new CompositeDisposable()
+    setTimeout (=> @cleanOldTriggers()), 1000
 
     @on 'keydown', (evt) =>
       if(evt.keyCode == 9) # TAB
@@ -54,6 +55,15 @@ module.exports = class EverythingView extends SelectListView
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
     @visible = false
+
+  cleanOldTriggers: ->
+    config = atom.config.get('everything') || {}
+    providersName = new Set(for name, _ of @providers
+      name
+    )
+    for key, _ of config when key.match(/Trigger$/)
+      if !providersName.has(key)
+        atom.config.unset("everything.#{key}")
 
   addItem: (item) ->
     return if item.score == 0

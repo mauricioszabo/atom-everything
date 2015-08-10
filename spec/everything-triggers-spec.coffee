@@ -18,10 +18,21 @@ describe "EverythingView's Items", ->
     spyOn(atom.config, 'set')
 
   it "registers a prefix to only trigger that provider", ->
-    configs = {}
     everything.registerProvider(test2Provider)
     expect(atom.config.set)
     .toHaveBeenCalledWith('everything.test2ProviderTrigger', 'tst')
+
+  it "un-registers old providers' triggers", ->
+    done = false
+    spyOn(atom.config, 'unset').andCallFake -> done = true
+    spyOn(atom.config, 'get').andCallFake ->
+      { oldTestProviderTrigger: "tst" }
+    everything.registerProvider(test2Provider)
+
+    waitsFor -> done
+    runs ->
+      expect(atom.config.unset)
+      .toHaveBeenCalledWith('everything.oldTestProviderTrigger')
 
   it "only calls this provider if trigger is present", ->
     spyOn(atom.config, 'get').andCallFake ->
