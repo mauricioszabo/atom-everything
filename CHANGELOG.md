@@ -1,4 +1,6 @@
 ## NEXT VERSION
+
+## 0.3.0 - Streams and Triggers
 * Possibility to style items in Everything
 * Added provider name in every item (configured by a parameter)
 * Stream object in the Everything instance
