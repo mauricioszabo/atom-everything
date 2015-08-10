@@ -17,13 +17,11 @@ module.exports =
     atom.commands.add 'atom-workspace', 'everything:fuzzy-finder', => @showEverything()
 
   simpleSearcher: (provider) ->
-    console.log "simple", provider
     provider.onQuery = provider.function
     provider.shouldRun ?= -> true
     @getEvr().registerProvider(provider)
 
   streamSearcher: (provider) ->
-    console.log "stream", provider
     provider.shouldRun ?= -> true
     @getEvr().registerProvider(provider)
 

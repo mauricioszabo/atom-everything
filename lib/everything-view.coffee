@@ -11,15 +11,15 @@ indexOfArray = (array, fn) ->
     return i if fn(e)
   null
 
-class EverythingView extends SelectListView
+module.exports = class EverythingView extends SelectListView
   lastQuery = ""
   fuzzaldrin: fuzzaldrin
   shouldUpdate: true
   Stream: require('./stream')
 
-  initialize: (config) ->
+  initialize: ->
     super
-    @config = config || {}
+    @visible = false
     @providers = {}
     @prefixes = []
     @providersByPrefix = {}
@@ -27,6 +27,7 @@ class EverythingView extends SelectListView
     @addClass('overlay from-top everything')
     @pane = atom.workspace.addModalPanel(item: this, visible: false)
     @setLoading() # We do our loading alone!
+    @append "<div id='providers'>"
     @streams = new CompositeDisposable()
 
     @on 'keydown', (evt) =>
@@ -52,6 +53,7 @@ class EverythingView extends SelectListView
     @streams.dispose()
     p.onStop(this) for _, p of @providers when p.onStop
     @pane.hide()
+    @visible = false
 
   addItem: (item) ->
     return if item.score == 0
@@ -137,20 +139,42 @@ class EverythingView extends SelectListView
     @streams = new CompositeDisposable()
     @scheduleUpdate()
 
-    for name, provider of @providers when provider.shouldRun(query)
-      do =>
-        span = @find("span[data-provider='#{name}']")
-        if span.length == 0
-          @append("<span class='key-binding' data-provider='#{name}'>#{name}</span>")
+    @eachProviderTriggered query, (name, provider, query) =>
+      span = @find("span[data-provider='#{name}']")
+      if span.length == 0
+        $('div#providers').append("<span class='key-binding'
+          data-provider='#{name}'>#{name}</span>")
 
-        console.log("Getting result of provider", provider.name)
-        result = provider.onQuery(query)
-        console.log(result)
-        if result.then # It's a promise, probably
-          @treatPromise(result, query, name)
-        else # It's probaby a stream
-          @treatStream(result, query, name)
-    null #Please, don't create lots of arrays!
+      result = provider.onQuery(query)
+      if result.then # It's a promise, probably
+        @treatPromise(result, query, name)
+      else # It's probaby a stream
+        @treatStream(result, query, name)
+
+  eachProviderTriggered: (query, fn) ->
+    triggers = []
+    triggerMapping = {}
+    config = atom.config.get('everything') || {}
+    for name, provider of @providers
+      trigger = config["#{name}ProviderTrigger"]
+      trigger ?= ''
+      triggers.push(trigger)
+      triggerMapping[trigger] ?= []
+      triggerMapping[trigger].push(@providers[name])
+
+    txt = triggers.sort( (e, f) -> e.length < f.length ).join("|")
+    regexp = new RegExp(txt)
+
+    trigger = query.match(regexp)
+    providers = if trigger
+      query = query.replace(trigger[0], '')
+      triggerMapping[trigger[0]] || []
+    else
+      providers = triggerMapping[''] || []
+
+    for provider in providers when provider.shouldRun(query)
+      fn(provider.name, provider, query.trim())
+      null #Please, don't create lots of arrays!
 
   treatPromise: (result, query, providerName) ->
     span = @loadingProviderElement(providerName)
@@ -165,7 +189,7 @@ class EverythingView extends SelectListView
   treatStream: (result, query, providerName) ->
     span = @loadingProviderElement(providerName)
     @streams.add result.onData (item) =>
-      @scoreItem(item, query, name)
+      @scoreItem(item, query, providerName)
     @streams.add result.onClose => span.detach()
 
   scoreItem: (i, query, name) ->
@@ -180,8 +204,11 @@ class EverythingView extends SelectListView
     @storeFocusedElement()
     p.onStart(this) for _, p of @providers when p.onStart
     @pane.show()
+    @visible = true
     @filterEditorView.setText(lastQuery)
     super
+
+    $('div#providers').html('')
     @updateResults(lastQuery)
     @filterEditorView.model.selectAll()
     @focusFilterEditor()
@@ -195,8 +222,4 @@ class EverythingView extends SelectListView
       atom.config.set("everything.#{key}", provider.defaultPrefix)
     # Adds into provider list
     @providers[provider.name] = provider
-
-    # prefix = atom.config.get("everything.#{provider.name}ProviderPrefix")
-    # provider.defaultPrefix = provider.defaultPrefix.trim()
-
-module.exports = EverythingView
+    provider.onStart(this) if @visible && provider.onStart
