@@ -59,7 +59,7 @@ module.exports = class EverythingView extends SelectListView
   cleanOldTriggers: ->
     config = atom.config.get('everything') || {}
     providersName = new Set(for name, _ of @providers
-      name
+      "#{name}ProviderTrigger"
     )
     for key, _ of config when key.match(/Trigger$/)
       if !providersName.has(key)
