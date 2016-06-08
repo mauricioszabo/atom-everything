@@ -17,7 +17,7 @@ module.exports =
     atom.commands.add 'atom-workspace', 'everything:fuzzy-finder', => @showEverything()
 
   simpleSearcher: (provider) ->
-    provider.onQuery = provider.function
+    provider.onQuery ?= provider.function
     provider.shouldRun ?= -> true
     @getEvr().registerProvider(provider)
 
