@@ -1,5 +1,10 @@
 ## NEXT VERSION
 
+## 0.3.1 - Bugfixes
+* Fixed a bug when provider added the onQuery in favor of deprecated function
+* Fixed highlight when provider uses triggers
+* Now using fuzzaldrin-plus to better matches
+
 ## 0.3.0 - Streams and Triggers
 * Possibility to style items in Everything
 * Added provider name in every item (configured by a parameter)
