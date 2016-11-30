@@ -3,7 +3,7 @@
 
 remote = require('remote')
 Menu = remote.require('menu')
-fuzzaldrin = require 'fuzzaldrin'
+fuzzaldrin = require 'fuzzaldrin-plus'
 MenuItem = remote.require('menu-item')
 
 indexOfArray = (array, fn) ->
@@ -113,7 +113,9 @@ module.exports = class EverythingView extends SelectListView
     @pane.destroy()
 
   viewForItem: (item) ->
-    matches = fuzzaldrin.match(item.queryString, lastQuery)
+    trigger = atom.config.get("everything.#{item.providerName}ProviderTrigger") || ""
+    queryToMatch = lastQuery.substring(trigger.length)
+    matches = fuzzaldrin.match(item.queryString, queryToMatch)
     index = item.queryString.toLowerCase().indexOf(item.displayName.toLowerCase())
 
     display = for char, i in item.displayName.split("")

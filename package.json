@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "atom-space-pen-views": "*",
-    "fuzzaldrin": "*"
+    "fuzzaldrin-plus": "*"
   },
   "consumedServices": {
     "everything.search": {
