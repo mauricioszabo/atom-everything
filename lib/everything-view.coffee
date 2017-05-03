@@ -2,9 +2,8 @@
 {CompositeDisposable} = require 'atom'
 
 remote = require('remote')
-Menu = remote.require('menu')
+{Menu, MenuItem} = remote
 fuzzaldrin = require 'fuzzaldrin-plus'
-MenuItem = remote.require('menu-item')
 
 indexOfArray = (array, fn) ->
   for e, i in array
